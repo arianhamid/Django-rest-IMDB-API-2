@@ -7,7 +7,7 @@ from watchlist_app.models import WatchList, StreamPlatform
 
 
 class StreamPlatformAV(APIView):
-    def get(self, request):
+    def get(self, request, format=None):
         platform = StreamPlatform.objects.all()
         serializer = StreamPlatformSerializer(
             platform, many=True, context={'request': request})
@@ -41,7 +41,7 @@ class WatchListAV(APIView):
 class WatchDetailAV(APIView):
     def get_object(self, pk):
         try:
-            return  WatchList.objects.get(pk=pk)
+            return WatchList.objects.get(pk=pk)
         except WatchList.DoesNotExist:
             raise Http404
 
@@ -53,7 +53,8 @@ class WatchDetailAV(APIView):
 
     def put(self, request, pk):
         movie = self.get_object(pk=pk)
-        serializer = WatchListSerializer(movie, data=request.data, context={'request': request})
+        serializer = WatchListSerializer(
+            movie, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -69,7 +70,7 @@ class WatchDetailAV(APIView):
 class StreamPlatformDetailAV(APIView):
     def get_object(self, pk):
         try:
-            return  StreamPlatform.objects.get(pk=pk)
+            return StreamPlatform.objects.get(pk=pk)
         except StreamPlatform.DoesNotExist:
             raise Http404
 
@@ -81,7 +82,8 @@ class StreamPlatformDetailAV(APIView):
 
     def put(self, request, pk):
         platform = self.get_object(pk=pk)
-        serializer = StreamPlatformSerializer(platform, data=request.data, context={'request': request})
+        serializer = StreamPlatformSerializer(
+            platform, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
