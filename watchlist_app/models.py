@@ -16,6 +16,7 @@ class WatchList(models.Model):
     platform = models.ForeignKey(StreamPlatform, on_delete=models.CASCADE, related_name="watchlist")
     published = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
+    
 
     def __str__(self):
         return self.title
