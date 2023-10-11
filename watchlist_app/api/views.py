@@ -8,7 +8,7 @@ from watchlist_app.api.serializers import WatchListSerializer, StreamPlatformSer
 from watchlist_app.models import WatchList, StreamPlatform, Review
 
 
-# Using generic class-based views
+# Using generic class-based views(Concrete View Classes method)
 class WatchListAV(generics.ListCreateAPIView):
     queryset = WatchList.objects.all()
     serializer_class = WatchListSerializer
