@@ -9,22 +9,26 @@ from watchlist_app.models import WatchList, StreamPlatform, Review
 
 
 # Using generic class-based views(Concrete View Classes method)
-class WatchListAV(generics.ListCreateAPIView):
-    queryset = WatchList.objects.all()
-    serializer_class = WatchListSerializer
+class ReviewList(generics.ListCreateAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Review.objects.filter(watchList=pk)
 
 
-class WatchDetailAV(generics.RetrieveUpdateDestroyAPIView):
-    queryset = WatchList.objects.all()
-    serializer_class = WatchListSerializer
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
 
 
 # Using mixins
-class ReviewList(mixins.ListModelMixin,
-                 mixins.CreateModelMixin,
-                 generics.GenericAPIView):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
+class WatchListAV(mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  generics.GenericAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -33,12 +37,12 @@ class ReviewList(mixins.ListModelMixin,
         return self.create(request, *args, **kwargs)
 
 
-class ReviewDetail(mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   generics.GenericAPIView):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
+class WatchDetailAV(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    generics.GenericAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -59,7 +63,8 @@ class StreamPlatformAV(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = StreamPlatformSerializer(data=request.data)
+        serializer = StreamPlatformSerializer(
+            data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
