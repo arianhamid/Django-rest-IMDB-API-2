@@ -9,19 +9,25 @@ from watchlist_app.models import WatchList, StreamPlatform, Review
 
 
 # Using generic class-based views(Concrete View Classes method)
-class ReviewList(generics.ListCreateAPIView):
+class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
         pk = self.kwargs['pk']
-        return Review.objects.filter(watchList=pk)
+        return Review.objects.filter(watchlist=pk)
 
 
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+class ReviewCreate(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        movie = WatchList.objects.get(pk=pk)
+        serializer.save(watchlist=movie)
 
 # Using mixins
 class WatchListAV(mixins.ListModelMixin,
