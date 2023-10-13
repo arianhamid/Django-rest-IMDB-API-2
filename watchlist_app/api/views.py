@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import mixins
 from rest_framework import generics
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError 
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlatformSerializer, ReviewSerializer
@@ -26,16 +27,23 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ReviewCreate(generics.CreateAPIView):
+    def get_queryset(self):
+        return Review.objects.all()
+    
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
         pk = self.kwargs.get('pk')
+        review_user = self.request.user
         movie = WatchList.objects.get(pk=pk)
-        serializer.save(watchlist=movie)
+        review_queryset = Review.objects.filter(watchlist=movie, review_user=review_user)
+        if review_queryset.exists():
+            raise ValidationError('You Have Already Reviewed This Movie')
+        
+        serializer.save(watchlist=movie, review_user=review_user)
+
 
 # Using mixins
-
-
 class WatchListAV(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   generics.GenericAPIView):
@@ -65,9 +73,8 @@ class WatchDetailAV(mixins.RetrieveModelMixin,
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+
 # using class-based viewSet
-
-
 class StreamPlatformViewSet(viewsets.ViewSet):
     """
     A simple ViewSet for listing or retrieving StreamPlatforms.
