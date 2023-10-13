@@ -3,6 +3,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import mixins
 from rest_framework import generics
+from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 from django.http import Http404
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlatformSerializer, ReviewSerializer
 from watchlist_app.models import WatchList, StreamPlatform, Review
@@ -22,14 +24,18 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+
     def perform_create(self, serializer):
         pk = self.kwargs.get('pk')
         movie = WatchList.objects.get(pk=pk)
         serializer.save(watchlist=movie)
 
 # Using mixins
+
+
 class WatchListAV(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   generics.GenericAPIView):
@@ -58,6 +64,27 @@ class WatchDetailAV(mixins.RetrieveModelMixin,
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+# using class-based viewSet
+
+
+class StreamPlatformViewSet(viewsets.ViewSet):
+    """
+    A simple ViewSet for listing or retrieving StreamPlatforms.
+    """
+
+    def list(self, request):
+        queryset = StreamPlatform.objects.all()
+        serializer = StreamPlatformSerializer(
+            queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = StreamPlatform.objects.all()
+        platform = get_object_or_404(queryset, pk=pk)
+        serializer = StreamPlatformSerializer(
+            platform, context={'request': request})
+        return Response(serializer.data)
 
 
 # using class-based views
