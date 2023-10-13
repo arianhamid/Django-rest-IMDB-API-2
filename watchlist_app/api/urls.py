@@ -15,4 +15,5 @@ urlpatterns = [
          ReviewCreate.as_view(), name='review_create'),
     path('list/review/<int:pk>', ReviewDetail.as_view(), name='review_details'),
     path('', include(router.urls)),
+    path('api-auth/', include("rest_framework.urls")),
 ]
