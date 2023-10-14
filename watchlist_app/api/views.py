@@ -18,6 +18,7 @@ class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         pk = self.kwargs['pk']
         return Review.objects.filter(watchlist=pk)
@@ -32,17 +33,25 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 class ReviewCreate(generics.CreateAPIView):
     def get_queryset(self):
         return Review.objects.all()
-    
+
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
         pk = self.kwargs.get('pk')
-        review_user = self.request.user
         movie = WatchList.objects.get(pk=pk)
-        review_queryset = Review.objects.filter(watchlist=movie, review_user=review_user)
+        review_user = self.request.user
+        review_queryset = Review.objects.filter(
+            watchlist=movie, review_user=review_user)
         if review_queryset.exists():
             raise ValidationError('You Have Already Reviewed This Movie')
-        
+        if movie.number_rating == 0:
+            movie.avg_rating = serializer.validated_data['rate']
+        else:
+            movie.avg_rating = (
+                movie.avg_rating + serializer.validated_data['rate'])/2
+        movie.number_rating += 1
+        movie.save()
+
         serializer.save(watchlist=movie, review_user=review_user)
 
 
